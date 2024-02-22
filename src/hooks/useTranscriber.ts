@@ -51,6 +51,19 @@ export interface Transcriber {
     setLanguage: (language: string) => void;
 }
 
+const fillEmptyTimestamps = (chunks: TranscriberData["chunks"]) => {
+    let lastEnd = 0;
+    return chunks.map((chunk, i) => {
+        const start = chunk.timestamp[0] || lastEnd;
+        const end = chunk.timestamp[1] || start + 1;
+        lastEnd = end;
+        return {
+            ...chunk,
+            timestamp: [start, end] as [number, number],
+        };
+    });
+};
+
 export function useTranscriber(): Transcriber {
     const [transcript, setTranscript] = useState<TranscriberData | undefined>(
         undefined,
@@ -94,7 +107,7 @@ export function useTranscriber(): Transcriber {
                 setTranscript({
                     isBusy: false,
                     text: completeMessage.data.text,
-                    chunks: completeMessage.data.chunks,
+                    chunks: fillEmptyTimestamps(completeMessage.data.chunks),
                 });
                 setIsBusy(false);
                 break;
@@ -157,7 +170,7 @@ export function useTranscriber(): Transcriber {
 
                     audio = new Float32Array(left.length);
                     for (let i = 0; i < audioData.length; ++i) {
-                        audio[i] = SCALING_FACTOR * (left[i] + right[i]) / 2;
+                        audio[i] = (SCALING_FACTOR * (left[i] + right[i])) / 2;
                     }
                 } else {
                     // If the audio is not stereo, we can just use the first channel:

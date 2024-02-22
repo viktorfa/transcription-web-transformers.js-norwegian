@@ -243,7 +243,7 @@ export function AudioManager(props: { transcriber: Transcriber }) {
                 <div className='flex flex-row space-x-2 py-2 w-full px-2'>
                     <UrlTile
                         icon={<AnchorIcon />}
-                        text={"From URL"}
+                        text={"Lim inn URL"}
                         onUrlUpdate={(e) => {
                             props.transcriber.onInputChange();
                             setAudioDownloadUrl(e);
@@ -252,7 +252,7 @@ export function AudioManager(props: { transcriber: Transcriber }) {
                     <VerticalBar />
                     <FileTile
                         icon={<FolderIcon />}
-                        text={"From file"}
+                        text={"Last opp fil"}
                         onFileUpdate={(decoded, blobUrl, mimeType) => {
                             props.transcriber.onInputChange();
                             setAudioData({
@@ -268,7 +268,7 @@ export function AudioManager(props: { transcriber: Transcriber }) {
                             <VerticalBar />
                             <RecordTile
                                 icon={<MicrophoneIcon />}
-                                text={"Record"}
+                                text={"Opptak fra mikrofon"}
                                 setAudioData={(e) => {
                                     props.transcriber.onInputChange();
                                     setAudioFromRecording(e);
@@ -299,12 +299,13 @@ export function AudioManager(props: { transcriber: Transcriber }) {
                             // isAudioLoading ||
                             isTranscribing={props.transcriber.isBusy}
                         />
-
-                        <SettingsTile
+                        {/*
+                            <SettingsTile
                             className='absolute right-4'
                             transcriber={props.transcriber}
                             icon={<SettingsIcon />}
-                        />
+                            />
+                        */}
                     </div>
                     {props.transcriber.progressItems.length > 0 && (
                         <div className='relative z-10 p-4 w-full'>
@@ -369,14 +370,7 @@ function SettingsModal(props: {
 
     const models = {
         // Original checkpoints
-        'Xenova/whisper-tiny': [41, 152],
-        'Xenova/whisper-base': [77, 291],
-        'Xenova/whisper-small': [249],
-        'Xenova/whisper-medium': [776],
-
-        // Distil Whisper (English-only)
-        'distil-whisper/distil-medium.en': [402],
-        'distil-whisper/distil-large-v2': [767],
+        "Xenova/nb-whisper-tiny-beta": [41, 152],
     };
     return (
         <Modal
@@ -400,13 +394,16 @@ function SettingsModal(props: {
                                     models[key].length == 2,
                             )
                             .filter(
-                                (key) => (
-                                    !props.transcriber.multilingual || !key.startsWith('distil-whisper/')
-                                )
+                                (key) =>
+                                    !props.transcriber.multilingual ||
+                                    !key.startsWith("distil-whisper/"),
                             )
                             .map((key) => (
                                 <option key={key} value={key}>{`${key}${
-                                    (props.transcriber.multilingual || key.startsWith('distil-whisper/')) ? "" : ".en"
+                                    props.transcriber.multilingual ||
+                                    key.startsWith("distil-whisper/")
+                                        ? ""
+                                        : ".en"
                                 } (${
                                     // @ts-ignore
                                     models[key][
@@ -555,15 +552,15 @@ function UrlModal(props: {
     return (
         <Modal
             show={props.show}
-            title={"From URL"}
+            title={"Lim inn URL"}
             content={
                 <>
-                    {"Enter the URL of the audio file you want to load."}
+                    {"Skriv inn URL her"}
                     <UrlInput onChange={onChange} value={url} />
                 </>
             }
             onClose={props.onClose}
-            submitText={"Load"}
+            submitText={"Hent"}
             onSubmit={onSubmit}
         />
     );
@@ -680,15 +677,15 @@ function RecordModal(props: {
     return (
         <Modal
             show={props.show}
-            title={"From Recording"}
+            title={"Opptak fra mikrofon"}
             content={
                 <>
-                    {"Record audio using your microphone"}
+                    {"Ta opp lyd med mikrofon"}
                     <AudioRecorder onRecordingComplete={onRecordingComplete} />
                 </>
             }
             onClose={onClose}
-            submitText={"Load"}
+            submitText={"Last inn"}
             submitEnabled={audioBlob !== undefined}
             onSubmit={onSubmit}
         />

@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import * as Subtitle from "@splayer/subtitle";
 
 import { TranscriberData } from "../hooks/useTranscriber";
 import { formatAudioTimestamp } from "../utils/AudioUtils";
@@ -26,7 +27,15 @@ export default function Transcript({ transcribedData }: Props) {
             .trim();
 
         const blob = new Blob([text], { type: "text/plain" });
-        saveBlob(blob, "transcript.txt");
+        saveBlob(blob, "transkript.txt");
+    };
+    const exportSrt = () => {
+        const srtString = getSrtFromWhisper({
+            segments: transcribedData?.chunks ?? [],
+            format: "srt",
+        });
+        const blob = new Blob([srtString], { type: "text/srt" });
+        saveBlob(blob, "transkript.srt");
     };
     const exportJSON = () => {
         let jsonData = JSON.stringify(transcribedData?.chunks ?? [], null, 2);
@@ -36,7 +45,7 @@ export default function Transcript({ transcribedData }: Props) {
         jsonData = jsonData.replace(regex, "$1[$2 $3]");
 
         const blob = new Blob([jsonData], { type: "application/json" });
-        saveBlob(blob, "transcript.json");
+        saveBlob(blob, "transkript.json");
     };
 
     // Scroll to the bottom when the component updates
@@ -78,16 +87,50 @@ export default function Transcript({ transcribedData }: Props) {
                         onClick={exportTXT}
                         className='text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 inline-flex items-center'
                     >
-                        Export TXT
+                        Last ned tekst (.txt)
+                    </button>
+                    <button
+                        onClick={exportSrt}
+                        className='text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 inline-flex items-center'
+                    >
+                        Last ned undertekster (.srt)
                     </button>
                     <button
                         onClick={exportJSON}
                         className='text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 inline-flex items-center'
                     >
-                        Export JSON
+                        Last ned rådata (.json)
                     </button>
                 </div>
             )}
         </div>
     );
 }
+
+const getSrtFromWhisper = ({
+    segments,
+    format = "srt",
+}: {
+    segments: TranscriberData["chunks"];
+    format: "srt" | "vtt";
+}): string => {
+    const segmentsMillis: Subtitle.SubSegment[] = [];
+    segments.forEach((x, i) => {
+        let [start, end] = x.timestamp;
+        if (!end || !Number.isFinite(start) || !Number.isFinite(end)) {
+            return;
+        }
+        segmentsMillis.push({
+            ...x,
+            text: x.text.trim(),
+            start: start * 1000,
+            end: end * 1000,
+        });
+    });
+
+    if (format === "vtt") {
+        return Subtitle.stringifyVtt(segmentsMillis);
+    } else {
+        return Subtitle.stringify(segmentsMillis);
+    }
+};
