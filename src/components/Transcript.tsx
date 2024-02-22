@@ -95,12 +95,6 @@ export default function Transcript({ transcribedData }: Props) {
                     >
                         Last ned undertekster (.srt)
                     </button>
-                    <button
-                        onClick={exportJSON}
-                        className='text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 inline-flex items-center'
-                    >
-                        Last ned rådata (.json)
-                    </button>
                 </div>
             )}
         </div>
